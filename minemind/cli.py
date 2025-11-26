@@ -2,12 +2,12 @@
 #--------------------------
 
 import sys
-# from typing import Optional
-# from .core.rng import rng
-# from core.board import Board, GameState
-# from .core.solver import Solver
-# from .core.snapshot import Snapshot
-# from .render import Renderer
+from typing import Optional
+from core.rng import RNG
+from core.board import Board, GameState
+from core.solver import Solver
+from core.snapshot import Snapshot
+from  .render import Renderer
 
 class CommandHandlers:
     """
@@ -160,7 +160,220 @@ Commands:
     quit | exit                                      - Exit program
         
         """)
+    def _parse_new(self, args):
+        """
+        Parse new command arguments.
+        """
+        width, height, mines, seed = 9, 9, 10, None
+        i = 0
+        while i < len(args):
+            if args[i] == '--w' and i + 1 < len(args):
+                width = int(args[i + 1])
+                i += 2
+            elif args[i] == '--h' and i + 1 < len(args):
+                height = int(args[i + 1])
+                i += 2
+            elif args[i] == 'mines' and i + 1 < len(args):
+                mines  = int(args[i + 1])
+                i += 2
+            elif args[i] == 'seed'  and i + 1 < len(args):
+                seed = int(args[i + 1])
+                i += 2
+            else:
+                i += 1
+        self._cmd_new(width, height, mines, seed)
+    
+    def _cmd_new(self, width: int, height: int, mines: int, seed: Optional[int]):
+        """
+        Create new game
+        """
+        rng = RNG(seed)
+        self.board = Board(width, height, mines, rng)
+        self.solver = Solver(self.board)
+        print(f"New game: {width}X{height}, {mines} mines" + 
+        (f", seed={seed}" if seed is not None else ""))
 
-command_test = CommandHandlers()
+    def _cmd_show(show, reveal: bool = False):
+        """
+        Display board
+        """
+        if not self.board:
+            print("No active game, Enter 'new' to start.")
+        elif self.board.game_state == GameState.WON:
+            print("\n🎉 YOU WIN! 🎉")
+        elif self.board.game_state == GameState.LOST:
+            print("\n💥 GAME OVER 💥")
 
-command_test.run()
+    def _cmd_open(self, x: int, y: int):
+        """
+        open cell
+        """
+        if not self.board:
+            print("No active game.")
+            return
+        if self.board.game_state != GameState.PLYING:
+            print("Game is over.")
+            return
+        
+        success, revealed = self.board.open(x, y)
+        print(f"Revealed {len(revealed)} cell")
+        self._cmd_show()
+    
+    def _cmd_flag(self, x: int, y: int):
+        """
+        Toggle flag
+        """
+        if not self.board:
+            print("No active game.")
+            return
+        if self.board.flag(x, y):
+            print(f"Flag toggled at ({x}, {y})")
+        else:
+            print(f"Cannot flag ({x}, {y})")
+
+    def _cmd_chord(self, x: int, y: int):
+        """
+        Chord at cell.
+        """
+        if not self.board:
+            print("No active game.")
+            return
+        if self.board.game_state != GameState.PLYING:
+            print("Game is over.")
+            return
+        success, revealed = self.board.chord(x, y)
+
+        if revealed:
+            print(f"Chorded, revealed {len(revealed)} cell")
+            self._cmd_show
+        else:
+            print("Chord conditions not met or invalid cell")
+
+    def _cmd_hint(self):
+        """
+        Get hint from solver.
+        """
+        if not self.board or not self.solver:
+            print("No active game.")
+            return
+
+        move = self.solver.get_hint()
+        if move:
+            action = "MINE" if move.is_mine else "SAVE"
+            cells_str = ", ".join(str(c) for c in sorted(move.cells))
+            print(f"{action}: {cells_str} - {move.explanatio}")
+        else:
+            print("No certain moves found")
+
+    def _cmd_step(self):
+        """
+        Apply one solver step.
+        """
+        if not self.board or not self.solver:
+            print("No active game.")
+            return
+
+        result = self.solver.step()
+        if result:
+            move, cells = result
+            action = "Flagged" if move.is_mine else "Opened"
+            cells_str = ", ".join(str(c) for c in sorted(cells))
+            print(f"Applied {move.rule}: {action} {cells_str}")
+
+            for cell in cells:
+                x, y = cell
+                if move.is_mine:
+                    self.board.flag(x, y)
+                else:
+                    self.board.open(x, y)
+            self._cmd_show()
+        else:
+            print("No certain moves available.")
+
+    def _cmd_auto(self, allow_guess: bool, limit: int):
+        """
+        Auto solve
+        """
+        if not self.board or not self.solve:
+            print("No Active game.")
+            return
+            
+        print(f"Auto-solving (guess={allow_guess}, limit={limit})...")
+        step, log = self.solver.auto_solve(allow_guess, limit)
+
+        for msg in log[-10:]:
+            print(f" {msg}")
+        
+        self._cmd_show()
+
+    def _cmd_prob(self):
+        """
+        Show probability heatmap.
+        """
+        if not self.board or not self.solver:
+            print("No active game.")
+            return
+
+        probs = self.solver.compute_probabilities()
+        print(Renderer.render_probabilites(self.board, probs))
+        
+    def _cmd_frontier(self):
+        """
+        Show frontier component summary.
+        """
+        if not self.board or not self.solver:
+            print("No active game.")
+            return
+
+        from.core.frontier import Frontier
+        frontier = Frontier(self.board)
+        components = frontier.get_components()
+
+        print(f"Frontier: {len(components)} components, {len(frontier.unknown)} unknown")
+        print(f" Component {i + 1}: {len(constraints)} constraints, {len(unknown)} unknown")
+    
+    def _cmd_save(self, filepath: str):
+        """
+        Save game to file.
+        """
+        if not self.board:
+            print("No Active game.")
+            return
+        Snapshot.save(self.board, filepath)
+        print(f"Saved to {filepath}")
+
+    def _cmd_load(self, filepath: str):
+        """
+        Load game from file.
+        """
+        try:
+            self.board = Snapshot.load(filepath)
+            self.solver = Solver(self.board)
+            print(f"Loaded from {filepath}")
+            self._cmd_show()
+        except Exception as e:
+            print(f"Failed to load: {e}")
+
+
+def main():
+    """
+    Entry point for CLI.
+    """
+    import argparse
+
+    parser = argparse.ArgumentParser(description="MineMind - CLI Minesweeper with Solver")
+    parser.add_argument('command', nargs='?', default=None, help='Comamnd to execute')
+    parser.add_argument('--w', type=int, default=9, help='Board width')
+    parser.add_argument('--h', type=int, default=9, help='Board height')
+    parser.add_argument('--mines', type=int, default=10, help='Number of mines')
+    parser.add_argument('--seed', type=int, default=None, help='Random seed')
+
+    args = parser.parse_args()
+    command_handler = CommandHandlers()
+    command_handler.run(args)
+
+
+if __name__ == '__main__':
+    main()
+
+
