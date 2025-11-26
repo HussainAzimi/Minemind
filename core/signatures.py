@@ -1,0 +1,1 @@
+# canonical component signature
