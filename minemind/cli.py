@@ -199,6 +199,9 @@ Commands:
         """
         if not self.board:
             print("No active game, Enter 'new' to start.")
+            return
+        print(Renderer.render(self.board, reveal))
+        
         elif self.board.game_state == GameState.WON:
             print("\n🎉 YOU WIN! 🎉")
         elif self.board.game_state == GameState.LOST:
