@@ -29,7 +29,7 @@ class Frontier:
         self.unknown_to_idx: Dict[Tuple[int, int], int] = {}
         self.constraints: List[constraint] = []
 
-        self._extract_frontier():
+        self._extract_frontier()
 
     def _extract_frontier(self):
         """
@@ -39,13 +39,13 @@ class Frontier:
         frontier_cells = []
 
         for y in range(self.board.height):
-            for x in range(self.board.with):
+            for x in range(self.board.width):
                 if self.board.get_state(x, y) == CellState.UNKNOWN:
                     unknowns_set.add((x, y))
                 elif self.board.get_state(x, y) == CellState.REVEALED:
                     count = self.board.get_count(x, y)
                     if count is not None and count > 0:
-                        neighbors = Generator.get_neighbors(x, y, self.board.with, self.board.height)
+                        neighbors = Generator.get_neighbors(x, y, self.board.width, self.board.height)
                         has_unknown = any(self.board.get_state(nx, ny) == CellState.UNKNOWN 
                                         for nx, ny in neighbors) 
                         if has_unknown:
@@ -55,7 +55,7 @@ class Frontier:
         self.unknown_to_idx = {cell: idx for idx, cell in enumerate(self.unknowns)}
 
         for fx, fy in frontier_cells:
-            neighbors = Generator.get_neighbors(fx, fy, self.board.with, self.board.height)
+            neighbors = Generator.get_neighbors(fx, fy, self.board.width, self.board.height)
 
             scope_mask = 0
             flagged_count = 0
@@ -74,7 +74,7 @@ class Frontier:
                     remaining = count - flagged_count
                     constraint = Constraint((fx, fy), scope_mask, remaining)
 
-    def get_components(self) -> List[Tuple[List[constraint], Set[int]]]:
+    def get_components(self) -> List[Tuple[List[Constraint], Set[int]]]:
         """
         Decompose frontier into independent components using DSU
 

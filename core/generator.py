@@ -1,7 +1,7 @@
 # first-click-safe mine placement, neighbor counts
 #--------------------------------------------------
 
-from typing import List, Tuple
+from typing import Set, Tuple
 from .rng import RNG
 
 class Generator:
@@ -23,23 +23,7 @@ class Generator:
         self.num_mines = num_mines
         self.rng = rng
 
-
-    def _neighbors(self, x: int, y: int) -> List[Tuple[int, int]]:
-        """
-        Return valid neighbor coordinates arround (x, y)
-        """
-        coords = []
-        for dx in (-1, 0, 1):
-            for dy in (-1, 0, 1):
-                if dx == 0 and dy == 0:
-                    continue
-                nx, ny = x + dx, y + dy
-                if 0 <= nx < self.width and 0 <= ny < self.height:
-                    coords.append((nx, ny))
-        return coords
-    
-
-    def palce_mines(self, first_x: int, first_y: int) -> Set[Tuple[int. int]]:
+    def palce_mines(self, first_x: int, first_y: int) -> Set[Tuple[int, int]]:
         """
         Place mines avoiding first click and its neighbors.
         Args:
@@ -64,7 +48,6 @@ class Generator:
 
         return mine_positions
 
-
     def _get_neighbors_with_counter(self, x: int, y: int) -> Set[Tuple[int, int]]:
         """
         Get cell and its 8 neighbors.
@@ -79,7 +62,8 @@ class Generator:
                     neighbors.add((nx, ny))
 
         return neighbors
-        
+
+    @staticmethod
     def get_neighbors(x: int, y: int, width: int, height: int) -> Set[Tuple[int, int]]:
         """
         Get 8 neighbors of cell, exculding center.
@@ -95,16 +79,17 @@ class Generator:
                 
         return neighbors
 
+    @staticmethod
     def compute_counts(mines: Set[Tuple[int, int]], width: int, height: int) -> dict:
         """
         Compute neighbor mine counts for all cell.
 
         Returns:
-          Dict mapping (x, y) -> count of adjacent mines
+            Dict mapping (x, y) -> count of adjacent mines
 
-         """
-         counts = {}
-         for y in range(height):
+            """
+        counts = {}
+        for y in range(height):
             for x in range(width):
                 if (x, y) in mines:
                     counts[(x, y)] = -1
@@ -113,4 +98,11 @@ class Generator:
                     count = sum(1 for n in neighbors if n in mines)
                     counts[(x, y)] = count
                     
-            return counts
+        return counts
+
+
+    
+        
+    
+
+

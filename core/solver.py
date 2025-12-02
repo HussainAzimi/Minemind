@@ -1,6 +1,6 @@
 # exact enumeration, probabilities, auto/step/hint
 
-from typing import list, Set, Tuple, Dict, optional
+from typing import List, Set, Tuple, Dict, Optional
 from .board import Board, CellState
 from .frontier import Frontier, Constraint
 from .rules import Rules, Move
@@ -21,7 +21,7 @@ class Solver:
         self.k_max = k_max
         self.cache = LRUCache(cache_size)
 
-    def get_hint(self) -> optional[Move]:
+    def get_hint(self) -> Optional[Move]:
         """
         Get one certain safe/mine move with explanation.
         """
@@ -41,7 +41,7 @@ class Solver:
                 for idx in unknown_indices:
                     cell = frontier.unknowns[idx]
                     prob = prob.get(idx, 0.5)
-                    if prob < 0.001":
+                    if prob < 0.001:
                         explanation = f"EXACT at {cell}: probability =0 from enumeration -> safe"
                         return Move({cell}, False, "EXACT", explanation)
                     elif prob > 0.999:
@@ -50,7 +50,7 @@ class Solver:
         
         return None
 
-    def step(self) -> optional[Tuple[Move, Set[Tuple[int, int]]]]:
+    def step(self) -> Optional[Tuple[Move, Set[Tuple[int, int]]]]:
         """
         Apply one deterministic solver step.
         """
@@ -127,7 +127,7 @@ class Solver:
                                     log.append(f"Stop {stops + 1}: Hint mine at {cell}!")
                                     return steps + 1, log
                                 log.append(f"Step {steps + 1}: Opened {cell} ({move.rule})")
-            steps += 1
+                steps += 1
             else:
                 if allow_guess:
                     guess_cell = self._select_best_guess()
@@ -146,9 +146,9 @@ class Solver:
                         log.append("No moves or guesses available")
                         break
 
-                    else:
-                        log.append("Stuck: no certain moves, guessing disabled")
-                        break
+                else:
+                    log.append("Stuck: no certain moves, guessing disabled")
+                    break
                                 
         if self.board.game_state == 1:
             log.append(f"WON in {steps} steps!")
@@ -160,7 +160,7 @@ class Solver:
         return steps, log
 
     
-    def _select_best_guess(self) -> Opened[Tuple[int, int]]:
+    def _select_best_guess(self) -> Optional[Tuple[int, int]]:
         """
         Select cell with lowest mine probability for guessing.
         """
@@ -200,7 +200,7 @@ class Solver:
         total_solutions = 0
 
         assignment = [0] * len(unknowns_list)
-        idx_to_pos = {idx: pos, idx in enumerate(unknowns_list)}
+        idx_to_pos = {idx: pos for pos, idx in enumerate(unknowns_list)}
 
 
         def backtrack(pos: int) -> None:
@@ -215,7 +215,7 @@ class Solver:
 
                 return 
             for val in [0, 1]:
-                assignment[pos] = val:
+                assignment[pos] = val
                 if self._can_continue(assignment, pos, constraints, unknowns_list, idx_to_pos):
                     backtrack(pos + 1)
 

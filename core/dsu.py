@@ -1,6 +1,6 @@
 # union–find
 
-from typing import Dist, Set
+from typing import Dict, Set
 
 class DSU:
     """
@@ -10,7 +10,7 @@ class DSU:
      parent[x] points to x's parent, parent[x] == x iff x is a root.
      rank[x] is an upper bound on the hieght of x's subtree.
      After find(x), parent[x] points directly to the root (path compression)
-     """"
+     """
     def __init__(self, elements: Set[int]):
         """ 
         Initialize DSU with given elements, each in its own set.

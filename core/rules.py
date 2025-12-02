@@ -14,7 +14,7 @@ class Move:
     rule: str
     explanation: str
 
-    clss Rules:
+class Rules:
     """
     Deterministic inference rules for Minesweeper solving.
     """
@@ -102,9 +102,10 @@ class Move:
         unique_moves = []
         for move in moves:
             move_key = (frozenset(move.cells), move.is_mine)
-            if move_key not in seen_cells"
-            seen_cells.add(move_key)
-            unique_moves.append(move)
+            if move_key not in seen_cells:
+                seen_cells.add(move_key)
+                unique_moves.append(move)
+            
         
         return unique_moves
 
