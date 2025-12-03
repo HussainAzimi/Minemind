@@ -6,6 +6,7 @@ from typing import Any, List, Tuple, Optional
 class PriorityQueue:
     """
     Min-heap priority queue.
+    
     Elements are tuples (priority, item) where lower priority values come first.
     """
     def __init__(self):

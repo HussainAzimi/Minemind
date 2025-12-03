@@ -7,14 +7,14 @@ def test_first_click_safety():
     """
     Test that first click and neighbors are mine_free.
     """
-    for trail in range(50):
-        rng = RNG(trail)
+    for trial in range(50):
+        rng = RNG(trial)
         gen = Generator(9, 9, 10, rng)
 
-        frist_x, first_y = 4, 4
-        mines = gen.place_mines(frist_x, first_y)
+        first_x, first_y = 4, 4
+        mines = gen.place_mines(first_x, first_y)
 
-        forbidden = gen._get_nighbors_width_with_center(frist_x, first_y)
+        forbidden = gen._get_neighbors_with_center(first_x, first_y)
 
         assert not any(m in forbidden for m in mines)
 
@@ -44,7 +44,7 @@ def test_neighbor_counts():
             else:
                 neighbors = Generator.get_neighbors(x, y, 5, 5)
                 expected = sum(1 for n in neighbors if n in mines)
-                assert counts[[x, y]] == expected
+                assert counts[(x, y)] == expected
 
 def test_deterministic_placement():
     """
@@ -52,7 +52,7 @@ def test_deterministic_placement():
     """
 
     rng1 = RNG(999)
-    gen1 = Generator(9, 9, 10, rng)
+    gen1 = Generator(9, 9, 10, rng1)
     mines1 = gen1.place_mines(3, 3)
 
     rng2 = RNG(999)

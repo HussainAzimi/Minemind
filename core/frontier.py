@@ -6,6 +6,7 @@ from .board import Board, CellState
 from .generator import Generator
 from .dsu import DSU
 
+@dataclass
 class Constraint:
     """
     A constraint from a revealed numbered cell.
@@ -27,7 +28,7 @@ class Frontier:
         self.board = board
         self.unknowns: List[Tuple[int, int]] = []
         self.unknown_to_idx: Dict[Tuple[int, int], int] = {}
-        self.constraints: List[constraint] = []
+        self.constraints: List[Constraint] = []
 
         self._extract_frontier()
 
@@ -44,6 +45,7 @@ class Frontier:
                     unknowns_set.add((x, y))
                 elif self.board.get_state(x, y) == CellState.REVEALED:
                     count = self.board.get_count(x, y)
+                    
                     if count is not None and count > 0:
                         neighbors = Generator.get_neighbors(x, y, self.board.width, self.board.height)
                         has_unknown = any(self.board.get_state(nx, ny) == CellState.UNKNOWN 
@@ -63,7 +65,7 @@ class Frontier:
             for nx, ny in neighbors:
                 state = self.board.get_state(nx, ny)
                 if state == CellState.UNKNOWN:
-                    idx = self.unknown_to_idx[[nx, ny]]
+                    idx = self.unknown_to_idx[(nx, ny)]
                     scope_mask |= (1 << idx)
                 elif state == CellState.FLAGGED:
                     flagged_count += 1
@@ -73,6 +75,7 @@ class Frontier:
                 if count is not None:
                     remaining = count - flagged_count
                     constraint = Constraint((fx, fy), scope_mask, remaining)
+                    self.constraints.append(constraint)
 
     def get_components(self) -> List[Tuple[List[Constraint], Set[int]]]:
         """
@@ -126,7 +129,7 @@ class Frontier:
         mask = 0
         for cell in cells:
             if cell in self.unknown_to_idx:
-                idx = self.unknown_to_idx
+                idx = self.unknown_to_idx[cell]
                 mask |= (1 << idx)
         return mask
 

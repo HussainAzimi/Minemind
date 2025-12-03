@@ -32,7 +32,7 @@ class Solver:
         components = frontier.get_components()
 
         for constraints, unknown_indices in components:
-            rule_moves = Rules.find_certain_moves(constraints, frontier.mask_to_cell)
+            rule_moves = Rules.find_certain_moves(constraints, frontier.mask_to_cells)
             if rule_moves:
                 return rule_moves[0]
 
@@ -40,12 +40,12 @@ class Solver:
                 probs = self._enumerate_component(constraints, unknown_indices, frontier)
                 for idx in unknown_indices:
                     cell = frontier.unknowns[idx]
-                    prob = prob.get(idx, 0.5)
+                    prob = probs.get(idx, 0.5)
                     if prob < 0.001:
                         explanation = f"EXACT at {cell}: probability =0 from enumeration -> safe"
                         return Move({cell}, False, "EXACT", explanation)
                     elif prob > 0.999:
-                        explanation = f"EXACT at {cell}: probability=1 from enumeration -> main"
+                        explanation = f"EXACT at {cell}: probability=1 from enumeration -> mine"
                         return Move({cell}, True, "EXACT", explanation)
         
         return None
@@ -86,15 +86,19 @@ class Solver:
                 for idx in unknown_indices:
                     cell = frontier.unknowns[idx]
                     probabilities[cell] = base_prob
-
+        
+        not_frontier_unknowns = set()
+        for idx, cell in enumerate(frontier.unknowns):
+            if idx not in all_component_indices:
+                not_frontier_unknowns.add(cell)
             
         if not_frontier_unknowns:
             revealed_count = sum(1 for y in range(self.board.height) 
                               for x in range(self.board.width) 
                               if self.board.get_state(x, y) == CellState.REVEALED)
-            falgged_count = self.board.falgged_count
-            remaining_mines = self.board.num_mines - falgged_count
-            remaining_cells = self.board.width * self.board.height - revealed_count - falgged_count
+            flagged_count = self.board.flag_count
+            remaining_mines = self.board.num_mines - flagged_count
+            remaining_cells = self.board.width * self.board.height - revealed_count - flagged_count
 
             if remaining_cells > 0:
                 base_prob = remaining_mines / remaining_cells
@@ -118,15 +122,15 @@ class Solver:
                     x, y = cell
                     if move.is_mine:
                         if self.board.get_state(x, y) != CellState.FLAGGED:
-                            self.board.falg(x, y)
-                            log.append(f"Step {steps +1}: Flagged {cell} ({move.rule})")
-                        else:
-                            if self.board.get_state(x, y) == CellState.UNKNOWN:
-                                success, _ = self.board.open(x, y)
-                                if not success:
-                                    log.append(f"Stop {stops + 1}: Hint mine at {cell}!")
-                                    return steps + 1, log
-                                log.append(f"Step {steps + 1}: Opened {cell} ({move.rule})")
+                            self.board.flag(x, y)
+                            log.append(f"Step {steps + 1}: Flagged {cell} ({move.rule})")
+                    else:
+                        if self.board.get_state(x, y) == CellState.UNKNOWN:
+                            success, _ = self.board.open(x, y)
+                            if not success:
+                                log.append(f"Step {steps + 1}: Hint mine at {cell}!")
+                                return steps + 1, log
+                            log.append(f"Step {steps + 1}: Opened {cell} ({move.rule})")
                 steps += 1
             else:
                 if allow_guess:
@@ -185,14 +189,14 @@ class Solver:
 
             return None
 
-    def _enumerate_component(self, constraints: List[Constraint], unknown_indices: Set[int], frontier: Frontier) -> Dict[int, int]:
+    def _enumerate_component(self, constraints: List[Constraint], unknown_indices: Set[int], frontier: Frontier) -> Dict[int, float]:
         """
-        Enumerate all satisfying assingments for a component.
+        Enumerate all satisfying assignment for a component.
         """
 
         signature = compute_signature(constraints)
-        cache = self.cache.get(signature)
-        if cache is not None:
+        cached = self.cache.get(signature)
+        if cached is not None:
             return  cached
 
         unknowns_list = sorted(unknown_indices)
@@ -207,11 +211,11 @@ class Solver:
             nonlocal total_solutions
 
             if pos == len(unknowns_list):
-                if self._is_valid_assignment(assingment, constraints, unknowns_list, idx_to_pos):
+                if self._is_valid_assignment(assignment, constraints, unknowns_list, idx_to_pos):
                     total_solutions += 1
-                    for i, val in enumerate(assingment):
+                    for i, val in enumerate(assignment):
                         if val == 1:
-                            mine_counts[unknowns_list[1]] += 1
+                            mine_counts[unknowns_list[i]] += 1
 
                 return 
             for val in [0, 1]:
@@ -233,7 +237,7 @@ class Solver:
         return probabilities
 
     def _is_valid_assignment(self, assignment: List[int], constraints: List[Constraint],
-                            unknown_list: List[int], idx_to_pos: Dict[int, int]) -> bool:
+                            unknowns_list: List[int], idx_to_pos: Dict[int, int]) -> bool:
         
         """
         Check if assignment satisties all constraints.

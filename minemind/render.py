@@ -6,7 +6,8 @@ class Renderer:
     """
     Render board state to ASCII art.
     """
-    def render(board: Board, reveal_all: bool= False) -> str:
+    @staticmethod
+    def render(board: Board, reveal_all: bool = False) -> str:
         """
         Render board to string
 
@@ -16,18 +17,19 @@ class Renderer:
         """
 
         lines = []
-        header = "  " + " ".join(str(i % 10) for i in range(board.width))
+        header = "    " + " ".join(str(i % 10) for i in range(board.width))
         lines.append(header)
 
         for y in range(board.height):
             row_parts = [f"{y:2}"]
             for x in range(board.width):
-                cell_str = Render._render_cell(board, x, y, reveal_all)
+                cell_str = Renderer._render_cell(board, x, y, reveal_all)
+                row_parts.append(cell_str)
             lines.append(" " + " ".join(row_parts))
 
         
         return "\n".join(lines)
-
+    @staticmethod
     def _render_cell(board: Board, x: int, y: int, reveal_all: bool) -> str:
         """
         Render single cell.
@@ -48,9 +50,9 @@ class Renderer:
                 return " "
             return str(count)
             
-        return "."
-
-    def render_probabilities(board": Board, probabilities: dist) -> str:
+        return "·"
+    @staticmethod
+    def render_probabilities(board: Board, probabilities: dict) -> str:
         """
         Render probability heatmap for unknown cells.
         """
@@ -58,7 +60,7 @@ class Renderer:
         header = "  " + " ".join(str(i % 10) for i in range(board.width))
         lines.append(header)
 
-        for i in range(board.height):
+        for y in range(board.height):
             row_parts = [f"{y:2}"]
             for x in range(board.width):
                 state = board.get_state(x, y)
@@ -67,16 +69,17 @@ class Renderer:
                 elif state == CellState.FLAGGED:
                     row_parts.append("F")
                 else:
-                    prob = probabilities.get((x, y), 0, 0)
-                    symbol = Render._prob_to_symbol(prob)
+                    prob = probabilities.get((x, y), 0.0)
+                    symbol = Renderer._prob_to_symbol(prob)
                     row_parts.append(symbol)
             
             lines.append(" " + " ".join(row_parts))
-        legend = "n\Legend: . (0%) - (10%) = (20%) + (30-40%) # (50-70%) @ (80-90%) * (100%)"
+            
+        legend = "\nLegend: . (0%) - (10%) = (20%) + (30-40%) # (50-70%) @ (80-90%) * (100%)"
         lines.append(legend)
 
         return "\n".join(lines)
-
+    @staticmethod
     def _prob_to_symbol(prob: float) -> str:
         """
         Convert probability to visual symbol.

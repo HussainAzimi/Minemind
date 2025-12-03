@@ -14,7 +14,7 @@ class LRUCache:
         Initialize LRU cache with given capacity.
         """
         if capacity <= 0:
-            raise ValueError("Capacity must be positive.")
+            raise ValueError("Capacity must be positive")
         self.capacity = capacity
         self.cache: OrderedDict[Any, Any] = OrderedDict()
 
@@ -37,7 +37,7 @@ class LRUCache:
         if key in self.cache:
             self.cache.move_to_end(key)
         self.cache[key] = value
-        if len(slef.cache) > self.capacity:
+        if len(self.cache) > self.capacity:
             self.cache.popitem(last=False)
 
     def invalidate(self, key: Any) -> None:
@@ -48,11 +48,11 @@ class LRUCache:
 
     def clear(self) -> None:
         """
-        Clear all entries form cache.
+        Clear all entries from cache.
         """
         self.cache.clear()
 
-    def _len__(self) -> int:
+    def __len__(self) -> int:
         """
         Return current cache size.
         """

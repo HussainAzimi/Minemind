@@ -12,7 +12,7 @@ def test_singles_all_safe():
     def mask_to_cells(mask):
         cells = set()
         for i in range(8):
-            if maks & (1 << i):
+            if mask & (1 << i):
                 cells.add((i, 0))
 
         return cells
@@ -22,7 +22,7 @@ def test_singles_all_safe():
 
     assert len(moves) == 1
     assert not moves[0].is_mine
-    assert len(moves[0].celss) == 4
+    assert len(moves[0].cells) == 4
 
 def test_singles_all_mines():
     """
@@ -40,8 +40,8 @@ def test_singles_all_mines():
     moves = Rules.apply_singles(constraints, mask_to_cells)
 
     assert len(moves) == 1
-    assert not moves[0].is_mine
-    assert len(moves[0].celss) == 3
+    assert moves[0].is_mine
+    assert len(moves[0].cells) == 3
 
 def test_subset_rule():
     """
@@ -54,9 +54,11 @@ def test_subset_rule():
                 cells.add((i, 0))
         return cells
 
-    cconstraints = [Constraint((5, 5), 0b00000011, 1),
-                    Constraint((5, 5), 0b00000011, 1), ]
-    moves = Rules.apply_subest_rule(constraints, mask_to_cells)
+    constraints = [
+        Constraint((5, 5), 0b00000011, 1),
+        Constraint((6, 5), 0b00000111, 1)
+    ]
+    moves = Rules.apply_subset_rule(constraints, mask_to_cells)
 
     assert len(moves) >= 1
 

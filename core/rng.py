@@ -14,7 +14,7 @@ class RNG:
         self.seed = seed
         self.rng = random.Random(seed)
 
-    def randint(self, a: int, b: int) ->int:
+    def randint(self, a: int, b: int) -> int:
         """
         Return random integer N such that a <= N <= b.
         """

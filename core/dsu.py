@@ -17,6 +17,13 @@ class DSU:
         """
         self.parent: Dict[int, int] = {x: x for x in elements}
         self.rank: Dict[int, int] = {x: 0 for x in elements}
+    def find(self, x: int) -> int:
+        """
+        Find the root of x's set with path compression.
+        """
+        if self.parent[x] != x:
+            self.parent[x] = self.find(self.parent[x])
+        return self.parent[x]
 
     def union(self, x: int, y: int) -> bool:
         """
@@ -31,7 +38,7 @@ class DSU:
 
         if self.rank[root_x] < self.rank[root_y]:
             self.parent[root_x] = root_y
-        elif self.rnak[root_x] > self.rank[root_x]:
+        elif self.rank[root_x] > self.rank[root_y]:
             self.parent[root_y] = root_x
 
         else:
@@ -40,7 +47,7 @@ class DSU:
 
         return True
 
-    def get_components(slef) -> Dict[int, Set[int]]:
+    def get_components(self) -> Dict[int, Set[int]]:
         """
         Return a mapping from root
         """
@@ -48,7 +55,7 @@ class DSU:
         for x in self.parent:
             root = self.find(x)
             if root not in components:
-                components[root] = Set(x)
+                components[root] = set()
             components[root].add(x) 
         return components
 

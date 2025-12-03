@@ -11,7 +11,7 @@ class Generator:
     Invariants:
      Mines are placed only after first click
      First click cell and its 8 neighbors never contain mines
-     Exacty the requested number of mines are placed 
+     Exactly the requested number of mines are placed 
      """
 
     def __init__(self, width: int, height: int, num_mines: int, rng: RNG):
@@ -23,7 +23,7 @@ class Generator:
         self.num_mines = num_mines
         self.rng = rng
 
-    def palce_mines(self, first_x: int, first_y: int) -> Set[Tuple[int, int]]:
+    def place_mines(self, first_x: int, first_y: int) -> Set[Tuple[int, int]]:
         """
         Place mines avoiding first click and its neighbors.
         Args:
@@ -34,12 +34,12 @@ class Generator:
          Set of (x, y) tuples representing mine positions
         """
 
-        forbidden = self._get_neighbors_with_counter(first_x, first_y)
+        forbidden = self._get_neighbors_with_center(first_x, first_y)
 
         available_cells = []
         for y in range(self.height):
             for x in range(self.width):
-                if(x, y) not in forbidden:
+                if (x, y) not in forbidden:
                     available_cells.append((x, y))
 
 
@@ -48,7 +48,7 @@ class Generator:
 
         return mine_positions
 
-    def _get_neighbors_with_counter(self, x: int, y: int) -> Set[Tuple[int, int]]:
+    def _get_neighbors_with_center(self, x: int, y: int) -> Set[Tuple[int, int]]:
         """
         Get cell and its 8 neighbors.
         """
@@ -66,9 +66,9 @@ class Generator:
     @staticmethod
     def get_neighbors(x: int, y: int, width: int, height: int) -> Set[Tuple[int, int]]:
         """
-        Get 8 neighbors of cell, exculding center.
+        Get 8 neighbors of cell, excluding center.
         """
-        enighbors = set()
+        neighbors = set()
         for dx in [-1, 0, 1]:
             for dy in [-1, 0, 1]:
                 if dx == 0 and dy == 0:
@@ -82,7 +82,7 @@ class Generator:
     @staticmethod
     def compute_counts(mines: Set[Tuple[int, int]], width: int, height: int) -> dict:
         """
-        Compute neighbor mine counts for all cell.
+        Compute neighbor mine counts for all cells.
 
         Returns:
             Dict mapping (x, y) -> count of adjacent mines

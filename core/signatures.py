@@ -3,7 +3,7 @@
 from typing import List, Tuple
 from .frontier import Constraint
 
-def compute_signature(constraints: List[Constraint]) -> tuple:
+def compute_signature(constraints: List[Constraint]) -> Tuple:
     """
     Compute canonical signature for a component.
     Signature is a tuple of (sorted scope masks, corresponding remaining values).
@@ -11,10 +11,10 @@ def compute_signature(constraints: List[Constraint]) -> tuple:
 
     """
 
-    paris = [(c.scope_mask, c.remaining) for c in constraints]
-    paris.sort()
+    pairs = [(c.scope_mask, c.remaining) for c in constraints]
+    pairs.sort()
     
-    masks = Tuple(p[0] for p in paris)
-    remaining = tuple(p[1] for p in paris)
+    masks = tuple(p[0] for p in pairs)
+    remaining = tuple(p[1] for p in pairs)
 
     return (masks, remaining)

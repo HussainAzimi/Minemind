@@ -18,7 +18,7 @@ class GameState:
     """
     Game outcome states.
     """
-    PLYING = 0
+    PLAYING = 0
     WON = 1
     LOST = 2
 
@@ -29,7 +29,7 @@ class Board:
     Invariants:
      Cells are either UNKNOWN, REVEALED, or FLAGGED
      Revealed cells cannot to flagged
-     Mines placed after first open, avoiding first click + neigbors
+     Mines placed after first open, avoiding first click + neighbors
      Counts accurately reflect adjacent mines
     """
 
@@ -47,7 +47,7 @@ class Board:
         self.counts: Optional[dict] = None
 
         self.first_click_done = False
-        self.game_state = GameState.PLYING
+        self.game_state = GameState.PLAYING
         self.revealed_count = 0
         self.flag_count = 0
 
@@ -59,20 +59,20 @@ class Board:
          (success, revealed_cells) where success is False if mine hit, and
          revealed_cells is set of newly revealed positions
         """
-        if not self.in_bound(x, y):
+        if not self._in_bounds(x, y):
             return False, set()
 
         if self.state[y][x] != CellState.UNKNOWN:
             return True, set()
         
         if not self.first_click_done:
-            self._palce_mines(x, y)
+            self._place_mines(x, y)
             self.first_click_done = True
 
-        if self.mines is not None and (x, y) is self.mines:
+        if self.mines is not None and (x, y) in self.mines:
             self.state[y][x] = CellState.REVEALED
             self.game_state = GameState.LOST
-            return False, {{x, y}}
+            return False, {(x, y)}
 
         revealed = self._flood_fill(x, y)
         self.revealed_count += len(revealed)
@@ -114,21 +114,21 @@ class Board:
         """
 
         if not self._in_bounds(x, y):
-            return True, Set()
+            return True, set()
         
         if self.state[y][x] != CellState.REVEALED:
-            return True, Set()
+            return True, set()
         if self.counts is None or self.counts[(x, y)] == 0:
-            return True, Set()
+            return True, set()
 
-        neigbors = Generator.get_neighbors(x, y, self.width, self.height)
-        flagged = sum(1 for nx, ny in neigbors if self.state[ny][nx] == CellState.FLAGGED)
+        neighbors = Generator.get_neighbors(x, y, self.width, self.height)
+        flagged = sum(1 for nx, ny in neighbors if self.state[ny][nx] == CellState.FLAGGED)
 
-        if self.counts is None or glagged != self.counts[(x, y)]:
-            return True, Set()
+        if self.counts is None or flagged != self.counts[(x, y)]:
+            return True, set()
 
-        all_revealed = Set()
-        for nx, ny in neigbors:
+        all_revealed = set()
+        for nx, ny in neighbors:
             if self.state[ny][nx] == CellState.UNKNOWN:
                 success, revealed = self.open(nx, ny)
                 all_revealed.update(revealed)
@@ -137,12 +137,12 @@ class Board:
 
         return True, all_revealed
     
-    def _palce_mines(self, first_x: int, first_y: int):
+    def _place_mines(self, first_x: int, first_y: int):
         """
         Place mines avoiding first click and neighbors.
         """
         generator = Generator(self.width, self.height, self.num_mines, self.rng)
-        self.mines = generator._palce_mines(first_x, first_y)
+        self.mines = generator.place_mines(first_x, first_y)
         self.counts = Generator.compute_counts(self.mines, self.width, self.height)
 
     def _flood_fill(self, x: int, y: int) -> Set[Tuple[int, int]]:
@@ -152,18 +152,18 @@ class Board:
         Return: set of revealed cell positions
         """
 
-        revealed  = Set()
+        revealed  = set()
         queue = deque([(x, y)])
         visited = {(x, y)}
 
         while queue:
             cx, cy = queue.popleft()
-            self.state[cx][cy] = CellState.REVEALED
+            self.state[cy][cx] = CellState.REVEALED
             revealed.add((cx, cy))
 
             if self.counts is not None and self.counts[(cx, cy)] == 0:
-                neigbors = Generator.get_neighbors(cx, cy, self.width, self.height)
-                for nx, ny in neigbors:
+                neighbors = Generator.get_neighbors(cx, cy, self.width, self.height)
+                for nx, ny in neighbors:
                     if (nx, ny) not in visited and self.state[ny][nx] == CellState.UNKNOWN:
                         visited.add((nx, ny))
                         queue.append((nx, ny))
@@ -182,7 +182,7 @@ class Board:
         """
         if not self._in_bounds(x, y):
             return CellState.UNKNOWN
-        return self.state[x][y]
+        return self.state[y][x]
 
     def get_count(self, x: int, y: int) -> Optional[int]:
         """
@@ -198,7 +198,7 @@ class Board:
         """
         if self.mines is None:
             return False
-        return (x, y) is self.mines
+        return (x, y) in self.mines
 
          
 

@@ -15,7 +15,7 @@ def test_frontier_extraction():
     board.open(4, 4)
     frontier = Frontier(board)
 
-    assert len(frontier.unknown) > 0
+    assert len(frontier.unknowns) > 0
     assert len(frontier.constraints) > 0
 
 def test_frontier_components():
@@ -33,7 +33,7 @@ def test_frontier_components():
 
 def test_bitmask_conversion():
     """
-    Test bitmask to cells coversion.
+    Test bitmask to cells conversion.
     """
     rng = RNG(42)
     board = Board(5, 5, 3, rng)
@@ -46,7 +46,3 @@ def test_bitmask_conversion():
 
         reconstructed_mask = frontier.cells_to_mask(cells)
         assert mask == reconstructed_mask
-
-
-
-    
