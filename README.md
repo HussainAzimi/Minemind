@@ -230,7 +230,7 @@ tests/
 
 # License
 
-Educational project - Fall 2025  data structure and algorithm final project.
+Educational project - Fall 2025  Data Structure and Algorithm final project.
 
 ## Acknowledgments
 
