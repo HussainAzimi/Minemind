@@ -1,7 +1,7 @@
 # Individual Course Project.
-# MineMind - CLI Minesweeper + Solver in Python.
-A complete command-line Minesweeper game with an intelligent solver that can solve boards using logic and
-small exact searches.
+## Overview
+
+MineMind is a command-line Minesweeper game featuring an intelligent solver that uses logical reasoning and probabilistic analysis. Built entirely with Python 3.11+ standard library, it demonstrates advanced algorithms including Union-Find for component decomposition, constraint satisfaction with exact enumeration, and probability-based decision making. The game provides a complete REPL interface for playing, auto-solving, and analyzing Minesweeper boards with deterministic, reproducible gameplay through seeded random generation.
 
 ## Features
 
@@ -230,8 +230,7 @@ tests/
 
 # License
 
-Educational project - Fall 2025  Data Structure and Algorithm final project.
-
+Educational project - Fall 2025 data structures and algorithms final project.
 ## Acknowledgments
 
 Built using Python 3.11+ standard library only (random, heapq, collections, dataclasses, argparse, json).
