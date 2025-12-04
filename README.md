@@ -231,6 +231,3 @@ tests/
 # License
 
 Educational project - Fall 2025 data structures and algorithms final project.
-## Acknowledgments
-
-Built using Python 3.11+ standard library only (random, heapq, collections, dataclasses, argparse, json).
